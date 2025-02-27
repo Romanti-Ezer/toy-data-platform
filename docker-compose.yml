@@ -1,0 +1,132 @@
+x-airflow-common:
+  &airflow-common
+  build:
+    context: ./airflow
+    dockerfile: airflow.Dockerfile
+  env_file: airflow/.env
+  environment:
+    - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
+    - AIRFLOW__CORE__FERNET_KEY=FB0o_zt4e3Ziq3LdUUO7F2Z95cvFFx16hU8jTeR1ASM=
+    - AIRFLOW__CORE__LOAD_EXAMPLES=False
+    - AIRFLOW__CORE__LOGGING_LEVEL=INFO
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/airflow-data/logs:/opt/airflow/logs
+    - ./airflow/airflow-data/plugins:/opt/airflow/plugins
+    - ./airflow/airflow-data/airflow.cfg:/opt/airlfow/airflow.cfg
+    - /var/run/docker.sock:/var/run/docker.sock
+  depends_on:
+    - postgres
+  group_add:
+      - ${DOCKER_GID:-999}
+
+services:
+  postgres:
+    image: postgres:12
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=airflow
+    ports:
+      - "5432:5432"
+
+  airflow-init:
+    << : *airflow-common
+    container_name: airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - airflow db init &&
+        airflow users create
+          --role Admin
+          --username airflow
+          --password airflow
+          --email airflow@airflow.com
+          --firstname airflow
+          --lastname airflow
+    restart: on-failure
+
+  airflow-webserver:
+    << : *airflow-common
+    command: airflow webserver
+    ports:
+      - 8080:8080
+    container_name: airflow_webserver
+    restart: always
+
+  airflow-scheduler:
+    << : *airflow-common
+    command: airflow scheduler
+    container_name: airflow_scheduler
+    restart: always
+
+  minio:
+    image: docker.io/bitnami/minio:2022
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - ./minio/minio-data:/data
+    environment:
+      - MINIO_ROOT_USER=root
+      - MINIO_ROOT_PASSWORD=rootrootroot
+      - MINIO_REGION_NAME=us-east-1
+      - MINIO_DEFAULT_BUCKETS=raw,trusted,refined
+
+
+  lakekeeper:
+    image: &lakekeeper-image ${LAKEKEEPER__SERVER_IMAGE:-quay.io/lakekeeper/catalog:latest-main}
+    pull_policy: &lakekeeper-pull-policy always
+    environment: &lakekeeper-environment
+      - LAKEKEEPER__PG_ENCRYPTION_KEY=This-is-NOT-Secure!
+      - LAKEKEEPER__PG_DATABASE_URL_READ=postgresql://postgres:postgres@lakekeeper_db:5432/postgres
+      - LAKEKEEPER__PG_DATABASE_URL_WRITE=postgresql://postgres:postgres@lakekeeper_db:5432/postgres
+      - LAKEKEEPER__AUTHZ_BACKEND=allowall
+    command: [ "serve" ]
+    healthcheck:
+      test: [ "CMD", "/home/nonroot/iceberg-catalog", "healthcheck" ]
+      interval: 1s
+      timeout: 10s
+      retries: 3
+      start_period: 3s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8181:8181"
+
+  migrate:
+    image: *lakekeeper-image
+    pull_policy: *lakekeeper-pull-policy
+    environment: *lakekeeper-environment
+    restart: "no"
+    command: [ "migrate" ]
+    depends_on:
+      lakekeeper_db:
+        condition: service_healthy
+
+  lakekeeper_db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -p 5432 -d postgres" ]
+      interval: 2s
+      timeout: 10s
+      retries: 2
+      start_period: 10s
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./lakekeeper/lakekeeper-data:/bitnami/postgresql
+
+  trino:
+    ports:
+      - "8081:8080"
+    image: "trinodb/trino:471"
+    volumes:
+      - ./trino/etc:/usr/lib/trino/etc:ro
+      - ./trino/catalog:/etc/trino/catalog

@@ -1,0 +1,6 @@
+sources:
+  - name: raw
+    database: raw  
+    schema: delivery  
+    tables:
+      - name: orders

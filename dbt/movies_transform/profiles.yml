@@ -1,0 +1,21 @@
+movies_transform_profile:
+  target: prod
+  outputs:
+    prod:
+      type: trino
+      method: none
+      host: trino
+      user: prod_user
+      port: 8080
+      database: trusted
+      schema: prd
+      http_scheme: http
+    dev:
+      type: trino
+      method: none
+      host: trino
+      user: dev_user
+      port: 8080
+      database: trusted
+      schema: "dev_{{env_var('DEV_SCHEMA')}}"
+      http_scheme: http

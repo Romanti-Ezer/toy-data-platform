@@ -1,0 +1,22 @@
+name: 'movies_transform'
+version: '1.0.0'
+config-version: 2
+
+profile: 'movies_transform_profile'
+
+models:
+  movies_transform:
+    trusted:
+      +database: trusted
+      +materialized: table
+      +on_table_exists: replace
+      movies:
+        +schema: movies
+      delivery:
+        +schema: delivery
+    refined:
+      +database: refined
+      +materialized: table
+      +on_table_exists: replace
+      ml:
+        +schema: ml

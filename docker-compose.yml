@@ -121,7 +121,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./lakekeeper/lakekeeper-data:/bitnami/postgresql
+      - ./lakekeeper/lakekeeper-data:/var/lib/postgresql/data
 
   trino:
     ports:
@@ -130,3 +130,7 @@ services:
     volumes:
       - ./trino/etc:/usr/lib/trino/etc:ro
       - ./trino/catalog:/etc/trino/catalog
+
+networks:
+  default:
+    name: platform-net

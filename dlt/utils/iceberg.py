@@ -10,8 +10,7 @@ def get_timestamp_from_path(file_path):
     return match.group(0) if match else None
 
 
-def get_generated_parquet_files(pipeline, table_name):
-    """Obtém os arquivos Parquet gerados diretamente do trace do pipeline"""
+def get_generated_parquet_files(table_catalog, pipeline, table_name):
     load_info = pipeline.last_trace.last_load_info
 
     table_files = []
@@ -22,7 +21,7 @@ def get_generated_parquet_files(pipeline, table_name):
                 and job.job_file_info.file_format == "parquet"
             ):
                 timestamp = get_timestamp_from_path(job.file_path)
-                s3_path = f"raw/{pipeline.dataset_name}/{table_name}/{timestamp}.{job.job_file_info.file_id}.parquet"
+                s3_path = f"{table_catalog}/{pipeline.dataset_name}/{table_name}/{timestamp}.{job.job_file_info.file_id}.parquet"
                 table_files.append(s3_path)
     return table_files
 
@@ -30,7 +29,6 @@ def get_generated_parquet_files(pipeline, table_name):
 def create_or_update_iceberg_table(
     table_catalog, table_schema, table_name, parquet_paths
 ):
-    """Cria ou atualiza uma tabela Iceberg via Trino"""
     access_key = os.environ.get(
         "DESTINATION__FILESYSTEM__CREDENTIALS__AWS_ACCESS_KEY_ID"
     )
@@ -74,3 +72,4 @@ def create_or_update_iceberg_table(
         update.union_by_name(dataset.schema)
 
     table.append(dataset.to_table())
+    print("added asset to catalog")

@@ -69,5 +69,5 @@ docker build -t my-dlt-pipeline .
 para rodar no container:
 
 ```
-docker run --rm --env-file .env my-dlt-pipeline --dataset netflix_titles
+docker run --rm --env-file .env my-dlt-pipeline -t netflix_titles
 ```

@@ -6,8 +6,6 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY filesystem_pipeline.py .
-
-COPY /data /app/data
+COPY . .
 
 CMD ["python", "filesystem_pipeline.py"]

@@ -5,7 +5,7 @@ from utils.iceberg import create_or_update_iceberg_table, get_generated_parquet_
 
 
 def stream_csv(table_name):
-    return pd.read_csv(f"data/{table_name}.csv")
+    yield pd.read_csv(f"data/{table_name}.csv")
 
 
 def main(table_name, table_catalog="raw", table_schema="movies"):

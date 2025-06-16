@@ -58,7 +58,7 @@ Get-Content .env | ForEach-Object {
 
 para rodar localmente:
 ```
-python filesystem_pipeline.py -d netflix_titles 
+python filesystem_pipeline.py -t netflix_titles 
 ```
 
 para buildar a imagem local

@@ -49,20 +49,11 @@ Este projeto define uma plataforma de dados completa utilizando `Docker Compose`
    cd data-platform
    ```
 
-2. **Suba os containers:**
+2. **Suba os container do minio primeiramente:**
 
    ```bash
-   docker-compose up -d
+   docker-compose up minio
    ```
-
-3. **Acesse os serviços:**
-
-   - Airflow: [http://localhost:8080](http://localhost:8080)
-     - Login: `airflow` / `airflow`
-   - MinIO: [http://localhost:9001](http://localhost:9001)
-     - Login: `root` / `rootrootroot`
-   - Trino UI: [http://localhost:8081](http://localhost:8081)
-   - Superset: [http://localhost:8088](http://localhost:8088)
 
 Depois, Acesse a interface do MinIO no navegador:
 ```
@@ -75,20 +66,34 @@ e crie a chave de api que sera usada nos arquivos `.env`
 
 voce pode cria-la acessando a url: http://localhost:9001/access-keys/new-account, copiar a chave de acesso e chave secreta e depois clicar em `create`
 
----
 
-
-## Variáveis de ambiente
+3. Configure as variáveis de ambiente dos serviços
 
 A maioria das variáveis sensíveis deve ser definida nos arquivos `.env` específicos de cada serviço.
-Dentro das pastas dos serviços (airflow,dbt,dlt e trino) temos arquivos `.env.sample` que podem ser usados como base para criação dos arquivos `.env`
+Dentro das pastas dos serviços (airflow,dbt,dlt e trino) temos arquivos `.env.sample` que podem ser usados como base para criação dos arquivos `.env`. 
+Nesses arquivos `.env` nosso objetivo é preencher a credencial de access_key_id e secret_access_key que pegamos do minio.
 
+4. Suba os containers restantes
+
+```
+docker compose up -d
+```
+
+5. **Acesse os serviços:**
+
+   - Airflow: [http://localhost:8080](http://localhost:8080)
+     - Login: `airflow` / `airflow`
+   - MinIO: [http://localhost:9001](http://localhost:9001)
+     - Login: `root` / `rootrootroot`
+   - Trino UI: [http://localhost:8081](http://localhost:8081)
+   - Superset: [http://localhost:8088](http://localhost:8088)
+   - Lakekeeper: [http://localhost:8181](http://localhost:8181)
 ---
 
 ## 🗂️ Buckets criados automaticamente no MinIO
 
 Ao iniciar, os seguintes buckets são criados:
-
+``
 - `raw`
 - `trusted`
 - `refined`

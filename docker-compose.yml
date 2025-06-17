@@ -121,7 +121,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./lakekeeper/lakekeeper-data:/var/lib/postgresql/data
+      - ./lakekeeper/lakekeeper-data/postresql:/var/lib/postgresql/data
 
   trino:
     ports:

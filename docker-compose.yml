@@ -12,9 +12,9 @@ x-airflow-common:
     - AIRFLOW__CORE__LOGGING_LEVEL=INFO
   volumes:
     - ./airflow/dags:/opt/airflow/dags
-    - ./airflow/airflow-data/logs:/opt/airflow/logs
-    - ./airflow/airflow-data/plugins:/opt/airflow/plugins
-    - ./airflow/airflow-data/airflow.cfg:/opt/airlfow/airflow.cfg
+    - airflow-data:/opt/airflow/logs
+    - airflow-data:/opt/airflow/plugins
+    - airflow-data:/opt/airlfow/airflow.cfg
     - /var/run/docker.sock:/var/run/docker.sock
   depends_on:
     - postgres
@@ -67,7 +67,7 @@ services:
       - '9000:9000'
       - '9001:9001'
     volumes:
-      - ./minio/minio-data:/data
+      - minio-data:/data
     environment:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootrootroot
@@ -121,7 +121,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - ./lakekeeper/lakekeeper-data/postresql:/var/lib/postgresql/data
+      - lakekeeper-data:/var/lib/postgresql/data
 
   trino:
     ports:
@@ -130,6 +130,7 @@ services:
     volumes:
       - ./trino/etc:/usr/lib/trino/etc:ro
       - ./trino/catalog:/etc/trino/catalog
+
   superset:
     init: true
     build:
@@ -138,12 +139,6 @@ services:
     volumes:
       - ./superset/superset-data:/app/superset_home
       - ./superset/setup.sh:/app/setup.sh
-    environment:
-      - DATABASE_DB=superset
-      - DATABASE_HOST=superset-postgres
-      - DATABASE_PASSWORD=superset
-      - DATABASE_USER=superset
-      - DATABASE_PORT=5432
     entrypoint: 
       - bash 
       - setup.sh 
@@ -154,14 +149,20 @@ services:
     init: true
     image: postgres:16
     volumes:
-      - ./superset/superset-data:/var/lib/postgresql/data
+      - superset-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=superset
       - POSTGRES_USER=superset
       - POSTGRES_PASSWORD=secretsecret
     ports:
       - "5434:5432"
-  
+
+volumes:
+  minio-data:
+  airflow-data:
+  lakekeeper-data:
+  superset-data:
+      
 networks:
   default:
     name: platform-net

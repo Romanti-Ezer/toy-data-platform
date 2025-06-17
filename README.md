@@ -52,7 +52,7 @@ Este projeto define uma plataforma de dados completa utilizando `Docker Compose`
 2. **Suba os containers:**
 
    ```bash
-   docker-compose up --build
+   docker-compose up -d
    ```
 
 3. **Acesse os serviços:**
@@ -71,18 +71,17 @@ http://localhost:9000
 - Usuário: `root`
 - Senha: `rootrootroot`
 
-e crie a chave de api que sera usada nos arquivos .env
+e crie a chave de api que sera usada nos arquivos `.env`
+
+voce pode cria-la acessando a url: http://localhost:9001/access-keys/new-account, copiar a chave de acesso e chave secreta e depois clicar em `create`
 
 ---
 
 
 ## Variáveis de ambiente
 
-A maioria das variáveis sensíveis está definida nos arquivos `.env` específicos de cada serviço, como:
-
-- `airflow/.env`
-- `superset/setup.sh` define variáveis para Superset
-- `MINIO_ROOT_USER`, `POSTGRES_PASSWORD`, etc. estão inline no `docker-compose.yml`
+A maioria das variáveis sensíveis deve ser definida nos arquivos `.env` específicos de cada serviço.
+Dentro das pastas dos serviços (airflow,dbt,dlt e trino) temos arquivos `.env.sample` que podem ser usados como base para criação dos arquivos `.env`
 
 ---
 

@@ -1,6 +1,6 @@
 sources:
   - name: raw
     database: raw  
-    schema: delivery  
+    schema:   prd_seed_data
     tables:
       - name: orders

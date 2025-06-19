@@ -20,3 +20,8 @@ models:
       +on_table_exists: replace
       ml:
         +schema: ml
+
+seeds:
+  +database: raw
+  +schema: seed_data
+  

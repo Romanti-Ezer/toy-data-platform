@@ -5,7 +5,7 @@
     )
 }}
 
-select * from {{source("raw","orders")}}
+select * from {{ref("orders_seed")}}
 
 {% if is_incremental() %}
 

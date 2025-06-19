@@ -1,6 +1,0 @@
-sources:
-  - name: raw
-    database: raw  
-    schema:   prd_seed_data
-    tables:
-      - name: orders

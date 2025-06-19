@@ -12,9 +12,9 @@ x-airflow-common:
     - AIRFLOW__CORE__LOGGING_LEVEL=INFO
   volumes:
     - ./airflow/dags:/opt/airflow/dags
-    - airflow-data:/opt/airflow/logs
-    - airflow-data:/opt/airflow/plugins
-    - airflow-data:/opt/airlfow/airflow.cfg
+    - airflow-logs:/opt/airflow/logs
+    - airflow-plugins:/opt/airflow/plugins
+    - airflow-config:/opt/airlfow/airflow.cfg
     - /var/run/docker.sock:/var/run/docker.sock
   depends_on:
     - postgres
@@ -23,13 +23,16 @@ x-airflow-common:
 
 services:
   postgres:
-    image: postgres:12
+    image: postgres:16
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=airflow
     ports:
       - "5432:5432"
+    volumes:
+      - airflow-data:/var/lib/postgresql/data
+      
 
   airflow-init:
     << : *airflow-common
@@ -40,8 +43,7 @@ services:
       - airflow db init &&
         airflow users create
           --role Admin
-          --username airflow
-          --password airflow
+          --username airflow --password airflow
           --email airflow@airflow.com
           --firstname airflow
           --lastname airflow
@@ -76,7 +78,7 @@ services:
 
 
   lakekeeper:
-    image: &lakekeeper-image ${LAKEKEEPER__SERVER_IMAGE:-quay.io/lakekeeper/catalog:latest-main}
+    image: &lakekeeper-image ${LAKEKEEPER__SERVER_IMAGE:-quay.io/lakekeeper/catalog:v0.9.1}
     pull_policy: &lakekeeper-pull-policy always
     environment: &lakekeeper-environment
       - LAKEKEEPER__PG_ENCRYPTION_KEY=This-is-NOT-Secure!
@@ -86,10 +88,10 @@ services:
     command: [ "serve" ]
     healthcheck:
       test: [ "CMD", "/home/nonroot/iceberg-catalog", "healthcheck" ]
-      interval: 1s
+      interval: 10s
       timeout: 10s
       retries: 3
-      start_period: 3s
+      start_period: 10s
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -160,9 +162,12 @@ services:
 
 volumes:
   minio-data:
-  airflow-data:
   lakekeeper-data:
   superset-data:
+  airflow-data:
+  airflow-logs:
+  airflow-plugins:
+  airflow-config:
       
 networks:
   default:

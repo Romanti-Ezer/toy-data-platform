@@ -16,7 +16,7 @@ Antes de começar, certifique-se de ter instalado:
 Crie um ambiente virtual
 
 ```
-virtual venv
+virtualenv venv
 ```
 
 ative-o
@@ -69,5 +69,5 @@ docker build -t my-dlt-pipeline .
 para rodar no container:
 
 ```
-docker run --rm --env-file .env my-dlt-pipeline -t netflix_titles
+docker run --rm --env-file .env --network platform-net my-dlt-pipeline python filesystem_pipeline.py -t netflix_titles
 ```
